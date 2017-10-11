@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="CustomerInfoApp" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title>Customer CRUD operation interface</title>
+        <link href="css/bootstrap.css" rel="stylesheet"/>
+        <link href="css/app.css" rel="stylesheet"/>
+        <script src="js/lib/angular.min.js" ></script>
+        <script src="js/lib/ui-bootstrap-tpls-0.9.0.js" ></script>
+        <script src="js/lib/localforage.min.js" ></script>
+        <script src="js/lib/ngStorage.min.js"></script>
+        <script src="js/app/application.js"></script>
+        <script src="js/app/CustomerService.js"></script>
+        <script src="js/app/CustomerController.js"></script>
+    </head>
+    <body>
+		<div class="generic-container" ng-controller="CustomerController as controller">
+		    <div class="panel panel-default">
+		        <!-- Default panel contents -->
+		        <div class="panel-heading"><span class="lead">Customer Form</span></div>
+				<div class="panel-body">
+			        <div class="formcontainer">
+			            <div class="alert alert-success" role="alert" ng-if="controller.successMessage">{{controller.successMessage}}</div>
+			            <div class="alert alert-danger" role="alert" ng-if="controller.errorMessage">{{controller.errorMessage}}</div>
+			            <form ng-submit="controller.submit()" name="customerForm" class="form-horizontal" novalidate autocomplete="off">
+			            	<!-- error messages -->
+			            	<div class="alert alert-danger" role="alert" ng-show="controller.validate && customerForm.$invalid">
+    							<h4>ERROR</h4> 
+                                <ul>
+                                	<li ng-show="customerForm.name.$error.required">Name is required</li>
+                                	<li ng-show="customerForm.name.$error.pattern">Enter a valid name, must contain only alphabets</li>
+	    							<li ng-show="customerForm.city.$error.required">City is required</li>
+	    							<li ng-show="customerForm.city.$error.pattern">Enter a valid city, must contain only alphabets</li>
+	    							<li ng-show="customerForm.state.$error.required">State is required</li>
+	    							<li ng-show="customerForm.state.$error.pattern">Enter a valid state, must contain only alphabets</li>
+	    							<li ng-show="customerForm.pin.$error.required">Pin Code is required</li>
+	    							<li ng-show="customerForm.pin.$error.pattern || customerForm.pin.$error.maxlength">Enter a valid Pin Code, must contain only 6 numbers</li>
+	    							<li ng-show="customerForm.phone.$error.required">Phone Number is required</li>
+	    							<li ng-show="customerForm.phone.$error.pattern|| customerForm.phone.$error.maxlength">Enter a valid Phone Number, must contain only 10 numbers</li>
+	    							<li ng-show="customerForm.status.$error.required">Please select a Status</li>	
+                                </ul>
+  							</div>
+  							
+			                <input type="hidden" ng-model="controller.customer.id"></input>
+			                <div class="row">
+			                    <div class="form-group col-md-12">
+			                        <label class="col-md-2 control-lable" for="name">Name<span style="color:red">*</span></label>
+			                        <div class="col-md-7">
+			                            <input type="text" ng-model="controller.customer.name" name="name" id="name" class="username form-control input-sm" placeholder="Enter your name" required ng-pattern="controller.onlyAlphabets"></input>
+			                        </div>
+			                    </div>
+			                </div>
+			                
+			                
+			                <!-- Address -->
+			                <div class="row">
+			                    <div class="form-group col-md-12">
+			                        <label class="col-md-2 control-lable" for="addr1">Address Line 1</label>
+			                        <div class="col-md-7">
+			                            <input type="text" ng-model="controller.customer.address.addressLineOne" id="addr1" class="username form-control input-sm" placeholder="Enter your Address"></input>
+			                        </div>
+			                    </div>
+			                </div>
+			                <div class="row">
+			                    <div class="form-group col-md-12">
+			                        <label class="col-md-2 control-lable" for="addr2">Address Line 2</label>
+			                        <div class="col-md-7">
+			                            <input type="text" ng-model="controller.customer.address.addressLineTwo" id="addr2" class="username form-control input-sm" placeholder="Enter your Address"></input>
+			                        </div>
+			                    </div>
+			                </div>
+			                <div class="row">
+			                    <div class="form-group col-md-12">
+			                        <label class="col-md-2 control-lable" for="city">City<span style="color:red">*</span></label>
+			                        <div class="col-md-7">
+			                            <input type="text" ng-model="controller.customer.address.city" name="city" id="city" class="username form-control input-sm" placeholder="Enter your City" required ng-pattern="controller.onlyAlphabets"></input>
+			                        </div>
+			                    </div>
+			                </div>
+			                <div class="row">
+			                    <div class="form-group col-md-12">
+			                        <label class="col-md-2 control-lable" for="state">State<span style="color:red">*</span></label>
+			                        <div class="col-md-7">
+<!-- 			                            <input type="text" ng-model="controller.customer.address.state" name="state" id="state" class="username form-control input-sm" placeholder="Enter your State" required ng-pattern="controller.onlyAlphabets"></input> -->
+<!-- 										<span class="k-widget k-autocomplete k-header k-state-default myClass"> -->
+<!-- 			                            	<input kendo-auto-complete k-data-source="controller.states" ng-model="controller.customer.address.state"/> -->
+<!-- 			                            </span> -->
+										<script id="stateListTemplate.html" type="text/ng-template"><a><span bind-html-unsafe="match.label | typeaheadHighlight:query"><i></a></script>
+										<input class="form-control" ng-model="controller.customer.address.state" placeholder="Enter your State" type="text" typeahead="state as state for state in controller.states | filter:$viewValue | limitTo:10" typeahead-min-length="1" typeahead-on-select="onSelectPart($item, $model, $label)" typeahead-template-url="stateListTemplate.html" required ng-pattern="controller.onlyAlphabets"></input> 
+			                        </div>
+			                    </div>
+			                </div>
+			                <div class="row">
+			                    <div class="form-group col-md-12">
+			                        <label class="col-md-2 control-lable" for="pin">Pin Code<span style="color:red">*</span></label>
+			                        <div class="col-md-7">
+			                            <input type="text" ng-model="controller.customer.address.pinCode" name="pin" id="pin" class="username form-control input-sm" placeholder="Enter your Pin Code" required ng-pattern="controller.onlyNumbers" ng-maxlength="6"></input>
+			                        </div>
+			                    </div>
+			                </div>
+			                <div class="row">
+			                    <div class="form-group col-md-12">
+			                        <label class="col-md-2 control-lable" for="phone">Phone Number<span style="color:red">*</span></label>
+			                        <div class="col-md-7">
+			                            <input type="text" ng-model="controller.customer.address.phoneNumber" name="phone" id="phone" class="username form-control input-sm" placeholder="Enter your Phone" required ng-pattern="controller.onlyNumbers" ng-maxlength="10"></input>
+			                        </div>
+			                    </div>
+			                </div>
+			                
+							
+			                <div class="row">
+			                    <div class="form-group col-md-12">
+			                        <label class="col-md-2 control-lable" for="internalName">Internal Name</label>
+			                        <div class="col-md-7">
+			                            <input type="text" ng-model="controller.customer.internalName" id="internalName" class="form-control input-sm" placeholder="Enter your Internal name"></input>
+			                        </div>
+			                    </div>
+			                </div>
+			
+			                <div class="row">
+			                    <div class="form-group col-md-12">
+			                        <label class="col-md-2 control-lable" for="status">Status<span style="color:red">*</span></label>
+			                        <div class="col-md-7">
+										 <select name="status" id="status" class="form-control input-sm" ng-model="controller.customer.status" required>
+										 	<option value="">---Please select a status---</option>
+     										<option value="ACTIVE">Active</option>
+      										<option value="INACTIVE">Inactive</option>
+      										<option value="DEACTIVATED">Deactivated</option>
+    									</select>
+			                        </div>
+			                    </div>
+			                </div>
+		
+			                <div class="row">
+			                    <div class="form-actions floatRight">
+			                        <input type="submit"  value="{{!controller.customer.id ? 'Add' : 'Update'}}" class="btn btn-primary btn-sm"></input>
+			                        <button type="button" ng-click="controller.reset()" class="btn btn-warning btn-sm" ng-disabled="customerForm.$pristine">Reset Form</button>
+			                    </div>
+			                </div>
+			            </form>
+		    	    </div>
+				</div>	
+		    </div>
+		    <div class="panel panel-default">
+		        <div class="panel-heading"><span class="lead">List of Customers</span></div>
+				<div class="panel-body">
+					<div class="table-responsive">
+				        <table class="table table-hover">
+				            <thead>
+				            <tr>
+				                <th>NAME</th>
+				                <th>ADDRESS</th>
+				                <th>INTERNAL NAME</th>
+				                <th>STATUS</th>
+				                <th width="100"></th>
+				                <th width="100"></th>
+				            </tr>
+				            </thead>
+				            <tbody>
+				            <tr ng-repeat="u in controller.getAllCustomers() | orderBy:'name'">
+				                <td>{{u.name | uppercase}}</td>
+				                <td>
+				                	<span ng-if="u.address.addressLineOne">{{u.address.addressLineOne | uppercase}},<br></br></span>
+				                	<span ng-if="u.address.addressLineTwo">{{u.address.addressLineTwo | uppercase}},<br></br></span>
+				                	{{u.address.city | uppercase}},<br></br>
+				                	{{u.address.state | uppercase}},<br></br>
+				                	{{u.address.pinCode}},<br></br>
+				                	<b>PHONE</b> - {{u.address.phoneNumber}}.<br></br>
+				                </td>
+				                <td><span ng-if="u.internalName">{{u.internalName}}</span><span ng-if="!u.internalName">UNAVAILABLE</span></td>
+				                <td>{{u.status}}</td>
+				                <td><button type="button" ng-click="controller.editCustomer(u.id)" class="btn btn-success custom-width">Edit</button></td>
+				                <td><button type="button" ng-click="controller.removeCustomer(u.id)" class="btn btn-danger custom-width">Remove</button></td>
+				            </tr>
+				            </tbody>
+				        </table>		
+					</div>
+				</div>
+		    </div>
+		</div>
+    </body>
+</html>
